@@ -89,16 +89,37 @@ def get_questions():
         questions = [line.strip() for line in f if line.strip()]
     return questions
 
+def add_question():
+    new_q = input("Enter a new question in the format 'Question?")
+    current = input("Enter the correct answer: ")
+    options = input("Enter three wrong options separated by commas: ")
+    new_q += current + "," + options
+    with open("questions.txt", "a") as f:
+        f.write(new_q + "\n")
+    print("Question added.")
+
+def load_players():
+    players = []
+    try:
+        with open("top_players.txt", "r") as f:
+            for line in f:
+                name, score = line.strip().split(":")
+                players.append({
+                    "username": name.strip(),
+                    "score": int(score.split()[0])
+                })
+    except FileNotFoundError:
+        pass
+    return players
+
 def main():
     users = []
+    old_players = load_players()
     all_questions = get_questions()
     while True:
         ask = input("Do you want to play or add questions? (play/add): ").strip().lower()
         if ask == "add":
-            new_q = input("Enter a new question in the format 'Question?Option1,Option2,Option3,Option4' (correct answer should be first): ")
-            with open("questions.txt", "a") as f:
-                f.write(new_q + "\n")
-            print("Question added.")
+            add_question()
             continue
         new_user_input = input("Enter your username: ").strip()
         existing_user = None
@@ -115,10 +136,13 @@ def main():
         play_round(user, all_questions)
         play = input("Do you want to continue with another player? (yes/no): ").strip().lower()
         if play != 'yes':
+            all_players = users + old_players
             print("Final rankings:")
-            for u in sorted(users, key=lambda x: x["score"], reverse=True):
-                with open("top_players.txt", "a") as f:
+            all_players = sorted(all_players, key=lambda x: x["score"], reverse=True)
+            with open("top_players.txt", "w") as f:
+                for u in all_players:
                     f.write(f"{u['username']}: {u['score']} points\n")
+                    print(f"{u['username']}: {u['score']} points")
             break
 
 if __name__ == "__main__":
