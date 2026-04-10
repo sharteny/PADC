@@ -138,7 +138,7 @@ def main():
         if play != 'yes':
             all_players = users + old_players
             print("Final rankings:")
-            all_players = sorted(all_players, key=lambda x: x["score"], reverse=True)
+            all_players = sorted(all_players, key=lambda x: x["score"],x["username"], reverse=True)
             with open("top_players.txt", "w") as f:
                 for u in all_players:
                     f.write(f"{u['username']}: {u['score']} points\n")
