@@ -4,7 +4,7 @@ import requests
 from tabulate import tabulate
 import time
 
-URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
+URL = "https://api.coingecko.com/api/v3/coins/markets"
 
 def get_crypto_data():
     params = {
