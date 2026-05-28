@@ -1,0 +1,3 @@
+name,surname,age,faculty,gender,average_grade
+John,Doe,20,Computer Science,male,85
+Anna,Smith,19,Mathematics,female,92
