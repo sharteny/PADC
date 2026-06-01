@@ -2,6 +2,25 @@
 import random
 
 
+class Player:
+    def __init__(self, username):
+        self.username = username
+        self.score = 0
+        self.fifty_fifty = False
+        self.audience = False
+        self.passed = False
+
+    def add_score(self):
+        self.score += 1
+
+
+class Question:
+    def __init__(self, text, options, correct):
+        self.text = text
+        self.options = options
+        self.correct = correct
+
+
 def next_question(questions):
     return random.choice(questions) if questions else None
 
@@ -25,7 +44,7 @@ def players():
         print("Username cannot be empty.")
         username = input("Enter your username: ").strip()
 
-    user = {"username": username, "score": 0, "50/50": False, "audience": False, "pass": False}
+    user = Player(username)
     return [user]
 
 
@@ -42,7 +61,8 @@ def parse_question(q):
 
         correct = options[0]
         random.shuffle(options)
-        return question, options, correct
+
+        return Question(question, options, correct)
 
     except Exception:
         print("Invalid question format:", q)
@@ -50,20 +70,20 @@ def parse_question(q):
 
 
 def use_help(input_choice, options, current, user):
-    if input_choice == '50' and not user["50/50"]:
+    if input_choice == '50' and not user.fifty_fifty:
         options = fifty_fifty(options, current)
         print("Options after 50/50:", ", ".join(options))
-        user["50/50"] = True
+        user.fifty_fifty = True
         return options
 
-    elif input_choice == 'audience' and not user["audience"]:
+    elif input_choice == 'audience' and not user.audience:
         ask_audience(current)
-        user["audience"] = True
+        user.audience = True
         return options
 
-    elif input_choice == 'pass' and not user["pass"]:
+    elif input_choice == 'pass' and not user.passed:
         print("You chose to pass. Moving to the next question.")
-        user["pass"] = True
+        user.passed = True
         return None
 
     else:
@@ -104,32 +124,30 @@ def ask_question(question, options, current, user):
 
 
 def play_round(user, all_questions):
-    user["50/50"] = False
-    user["audience"] = False
-    user["pass"] = False
-    user["score"] = 0
+    user.fifty_fifty = False
+    user.audience = False
+    user.passed = False
+    user.score = 0
 
-    questions = all_questions.copy()
-
-    if not questions:
+    if not all_questions:
         print("No questions available.")
         return
 
-    for quest in random.sample(questions, min(10, len(questions))):
-        parsed = parse_question(quest)
-        if parsed is None:
+    questions = random.sample(all_questions, min(10, len(all_questions)))
+
+    for quest in questions:
+        question = parse_question(quest)
+        if question is None:
             continue
 
-        question, options, correct = parsed
-
         try:
-            if ask_question(question, options, correct, user):
-                user["score"] += 1
+            if ask_question(question.text, question.options, question.correct, user):
+                user.add_score()
         except Exception:
             print("Error in question, skipping...")
             continue
 
-    print(f"{user['username']} got {user['score']}/10 questions right.\n")
+    print(f"{user.username} got {user.score}/10 questions right.\n")
 
 
 def get_questions():
@@ -188,10 +206,9 @@ def load_players():
             for line in f:
                 try:
                     name, score = line.strip().split(":")
-                    players.append({
-                        "username": name.strip(),
-                        "score": int(score.split()[0])
-                    })
+                    user = Player(name.strip())
+                    user.score = int(score.split()[0])
+                    players.append(user)
                 except Exception:
                     print("Invalid player data:", line)
 
@@ -222,14 +239,14 @@ def main():
 
             existing_user = None
             for u in users:
-                if u["username"].lower() == new_user_input.lower():
+                if u.username.lower() == new_user_input.lower():
                     existing_user = u
                     break
 
             if existing_user:
                 user = existing_user
             else:
-                user = {"username": new_user_input, "score": 0, "50/50": False, "audience": False, "pass": False}
+                user = Player(new_user_input)
                 users.append(user)
 
             play_round(user, all_questions)
@@ -238,13 +255,13 @@ def main():
 
             if play != 'yes':
                 all_players = users + old_players
-                all_players = sorted(all_players, key=lambda x: (x["score"], x["username"]), reverse=True)
+                all_players = sorted(all_players, key=lambda x: (x.score, x.username), reverse=True)
 
                 try:
                     with open("top_players.txt", "w", encoding="utf-8") as f:
                         for u in all_players:
-                            f.write(f"{u['username']}: {u['score']} points\n")
-                            print(f"{u['username']}: {u['score']} points")
+                            f.write(f"{u.username}: {u.score} points\n")
+                            print(f"{u.username}: {u.score} points")
                 except Exception:
                     print("Error saving leaderboard.")
 
