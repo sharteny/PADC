@@ -11,14 +11,25 @@ DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "bank.json")
 class Bank:
 
     def __init__(self):
-        self.accounts = []
-        self.next_number = 1001
+        self._accounts = []
+        self._next_number = 1001
         self.load_data()
 
-    
+    @property
+    def accounts(self):
+        return self._accounts
+
+    @property
+    def next_number(self):
+        return self._next_number
+
+    @next_number.setter
+    def next_number(self, value):
+        self._next_number = value
+
     def create_account(self, account_type, owner, initial_balance=0.0, **kwargs):
-        account_number = str(self.next_number)
-        self.next_number += 1
+        account_number = str(self._next_number)
+        self._next_number += 1
  
         if account_type == "savings":
             min_bal = kwargs.get("minimum_balance", 100.0)
@@ -29,20 +40,20 @@ class Bank:
         else:
             raise ValueError(f"Unknown account type: '{account_type}'.")
  
-        self.accounts.append(account)
+        self._accounts.append(account)
         self.save_data()
         print(f"  Account created! Number: {account_number} | Owner: {owner}")
         return account
 
     def display_all_accounts(self):
-        if not self.accounts:
+        if not self._accounts:
             print("  No accounts yet.")
             return
-        for i, account in enumerate(self.accounts, start=1):
+        for i, account in enumerate(self._accounts, start=1):
             print(f"  {i}. {account}")
 
     def find_account(self, account_number):
-        for account in self.accounts:
+        for account in self._accounts:
             if account.account_number == str(account_number):
                 return account
         return None
@@ -52,7 +63,7 @@ class Bank:
         savings_count = 0
         checking_count = 0
  
-        for account in self.accounts:
+        for account in self._accounts:
             total_balance += account.balance
             if isinstance(account, SavingsAccount):
                 savings_count += 1
@@ -68,7 +79,7 @@ class Bank:
 
     def save_data(self):
         accounts_data = []
-        for account in self.accounts:
+        for account in self._accounts:
             entry = {
                 "type": type(account).__name__,
                 "owner": account.owner,
@@ -86,7 +97,7 @@ class Bank:
             accounts_data.append(entry)
  
         data = {
-            "next_number": self.next_number,
+            "next_number": self._next_number,
             "total_accounts": BankAccount.total_accounts,
             "interest_rate": BankAccount.interest_rate,
             "accounts": accounts_data,
@@ -101,7 +112,7 @@ class Bank:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
  
-            self.next_number = data.get("next_number", 1001)
+            self._next_number = data.get("next_number", 1001)
             BankAccount.interest_rate = data.get("interest_rate", 0.03)
             BankAccount.total_accounts = 0
  

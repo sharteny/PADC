@@ -9,25 +9,33 @@ class Book:
     author: str
     isbn: str
     copies: int = 1
-    available_copies: int = field(default=0, init=False)
+    _available_copies: int = field(default=0, init=False)
  
     def __post_init__(self):
-        self.available_copies = self.copies
+        self._available_copies = self.copies
  
+    @property
+    def available_copies(self):
+        return self._available_copies
+
+    @available_copies.setter
+    def available_copies(self, value):
+        self._available_copies = value
+
     def is_available(self):
-        return self.available_copies > 0
+        return self._available_copies > 0
  
     def borrow(self):
         if not self.is_available():
             raise ValueError(f"No copies of '{self.title}' are available right now.")
-        self.available_copies -= 1
+        self._available_copies -= 1
         due_date = datetime.now() + timedelta(days=14)
         return due_date
  
     def return_book(self):
-        if self.available_copies >= self.copies:
+        if self._available_copies >= self.copies:
             raise ValueError("All copies are already on the shelf.")
-        self.available_copies += 1
+        self._available_copies += 1
  
     @staticmethod
     def validate_isbn(isbn):
@@ -35,7 +43,7 @@ class Book:
         return cleaned.isdigit() and len(cleaned) >= 10
  
     def __str__(self):
-        status = f"{self.available_copies}/{self.copies} available"
+        status = f"{self._available_copies}/{self.copies} available"
         return f'"{self.title}" by {self.author} | ISBN: {self.isbn} | {status}'
  
     def __repr__(self):

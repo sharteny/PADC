@@ -7,27 +7,43 @@ class BankAccount:
 
     def __init__(self, owner, account_number, balance=0.0):
         BankAccount.total_accounts +=1
-        self.owner = owner.strip()
-        self.balance = balance
-        self.account_number = account_number
-        self.transactions = []
+        self._owner = owner.strip()
+        self._balance = balance
+        self._account_number = account_number
+        self._transactions = []
     
+    @property
+    def owner(self):
+        return self._owner
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @property
+    def account_number(self):
+        return self._account_number
+
+    @property
+    def transactions(self):
+        return self._transactions
+
     def deposit(self, amount):
         if not BankAccount.validate_amount(amount):
             raise ValueError("Deposit amount must be a positive number.")
-        self.balance += amount
-        self.transactions.append(Transaction("deposit", amount))
+        self._balance += amount
+        self._transactions.append(Transaction("deposit", amount))
     
     def withdraw(self, amount):
         if not BankAccount.validate_amount(amount):
             raise ValueError("Withdrawal amount must be a positive number.")
-        if amount > self.balance:
+        if amount > self._balance:
             raise ValueError("Insufficient funds.")
-        self.balance -= amount
-        self.transactions.append(Transaction("withdrawal", amount))
+        self._balance -= amount
+        self._transactions.append(Transaction("withdrawal", amount))
     
     def get_balance(self):
-         print(f"   Balance: ${self.balance:.2f}")
+         print(f"   Balance: ${self._balance:.2f}")
 
     @staticmethod
     def validate_amount(amount):
@@ -40,10 +56,10 @@ class BankAccount:
         target_account.deposit(amount)
  
     def show_transactions(self):
-        if not self.transactions:
+        if not self._transactions:
             print("  No transactions yet.")
             return
-        for t in self.transactions:
+        for t in self._transactions:
             print(f"  {t}")
  
 
@@ -55,15 +71,15 @@ class BankAccount:
     
     def __str__(self):
         return (
-            f"[{self.account_number}] {self.owner} | "
-            f"Balance: ${self.balance:.2f} | "
+            f"[{self._account_number}] {self._owner} | "
+            f"Balance: ${self._balance:.2f} | "
             f"Type: {type(self).__name__}"
         )
     
     def __repr__(self):
         return (
             f"{type(self).__name__}("
-            f"owner={self.owner!r}, "
-            f"account_number={self.account_number!r}, "
-            f"balance={self.balance})"
+            f"owner={self._owner!r}, "
+            f"account_number={self._account_number!r}, "
+            f"balance={self._balance})"
         )

@@ -11,31 +11,31 @@ DATA_FILE = "data/library.json"
 
 
 class LibraryService:
-    total_books = 0
-    total_members = 0
+    _total_books = 0
+    _total_members = 0
 
     def __init__(self):
-        self.books = []
-        self.members = []
+        self._books = []
+        self._members = []
         self.load_data()
 
     @classmethod
     def get_statistics(cls):
         return {
-            "Total book titles added": cls.total_books,
-            "Total members registered": cls.total_members,
+            "Total book titles added": cls._total_books,
+            "Total members registered": cls._total_members,
         }
 
     def add_book(self, book):
-        for existing in self.books:
+        for existing in self._books:
             if existing.isbn == book.isbn:
                 raise ValueError(f"A book with ISBN '{book.isbn}' already exists.")
-        self.books.append(book)
-        LibraryService.total_books += 1
+        self._books.append(book)
+        LibraryService._total_books += 1
         self.save_data()
 
     def find_book(self, isbn):
-        for book in self.books:
+        for book in self._books:
             if book.isbn == isbn:
                 return book
         return None
@@ -43,37 +43,37 @@ class LibraryService:
     def search_books(self, query):
         query_lower = query.lower()
         results = []
-        for book in self.books:
+        for book in self._books:
             if query_lower in book.title.lower() or query_lower in book.author.lower():
                 results.append(book)
         return results
 
     def display_all_books(self):
-        if not self.books:
+        if not self._books:
             print("  No books in the catalogue yet.")
             return
         for i, book in enumerate(self.books, start=1):
             print(f"  {i}. {book}")
 
     def add_member(self, member):
-        for existing in self.members:
+        for existing in self._members:
             if existing.member_id == member.member_id:
                 raise ValueError(f"Member ID {member.member_id} is already registered.")
-        self.members.append(member)
-        LibraryService.total_members += 1
+        self._members.append(member)
+        LibraryService._total_members += 1
         self.save_data()
 
     def find_member(self, member_id):
-        for member in self.members:
+        for member in self._members:
             if str(member.member_id) == str(member_id):
                 return member
         return None
 
     def display_all_members(self):
-        if not self.members:
+        if not self._members:
             print("  No members registered yet.")
             return
-        for i, member in enumerate(self.members, start=1):
+        for i, member in enumerate(self._members, start=1):
             print(f"  {i}. {member}")
 
     def borrow_book(self, member_id, isbn):
@@ -197,8 +197,8 @@ class LibraryService:
             })
 
         data = {
-            "total_books": LibraryService.total_books,
-            "total_members": LibraryService.total_members,
+            "total_books": LibraryService._total_books,
+            "total_members": LibraryService._total_members,
             "books": books_data,
             "members": members_data,
         }
@@ -215,8 +215,8 @@ class LibraryService:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            LibraryService.total_books = data.get("total_books", 0)
-            LibraryService.total_members = data.get("total_members", 0)
+            LibraryService._total_books = data.get("total_books", 0)
+            LibraryService._total_members = data.get("total_members", 0)
 
             for entry in data.get("books", []):
                 book_type = entry["type"]
@@ -233,7 +233,7 @@ class LibraryService:
                 else:
                     book = Book(entry["title"], entry["author"], entry["isbn"], entry["copies"])
                 book.available_copies = entry["available_copies"]
-                self.books.append(book)
+                self._books.append(book)
 
             for entry in data.get("members", []):
                 member = Member(entry["name"])
@@ -249,7 +249,7 @@ class LibraryService:
                         due_date=loan_data.get("due_date", ""),
                         late_fee=loan_data.get("late_fee", 0.0),
                     ))
-                self.members.append(member)
+                self._members.append(member)
 
             print("  Data loaded from library.json.")
 
